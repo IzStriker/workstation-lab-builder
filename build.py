@@ -23,15 +23,20 @@ def main():
             sys.exit(e)
 
         # Clone VM
-        res = vmmanagement.clone_vm(machine["name"], parent_id, credentials)
+        id = ""
+        res = {}
+        if machine["linked"]:
+            res = vmmanagement.linked_clone_vm(machine["name"], parent_id, credentials)
+        else:
+            res = vmmanagement.clone_vm(machine["name"], parent_id, credentials)
 
         id = res["id"]
-
+        
         if("Code" in res):
             print(f"Error {res['Code']}: {res['Message']}")
         
-
         print(f"Virtual Machine, {machine['name']} created. Memory: {res['memory']}, CPUs: {res['cpu']['processors']}") 
+
 
         # Add all interfaces as nat
         try:
@@ -45,6 +50,10 @@ def main():
         # Set interface to correct type and network
         vmnetwork.configure_interface_type(machine["adapters"], id, credentials)
         print(f"Adapters set on {machine['name']}")
+
+        # Register Virtual Machine
+        vmmanagement.register_vm(id, machine["name"], credentials)
+        print(f"{machine['name']} registered")
     
 
 
